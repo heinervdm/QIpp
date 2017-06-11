@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QHash>
+#include <QDebug>
 
 #include <cups/cups.h>
 
@@ -35,7 +36,9 @@ public slots:
 		m_port = port;
 	};
 	void setStatusInterval(int interval);
-
+	inline void printStatus(QString state, QString reason) {
+		qDebug() << state << ":" << reason;
+	}
 signals:
 	void printerStatusChanged(QString state, QString statereason);
 
