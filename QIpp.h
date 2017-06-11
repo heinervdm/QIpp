@@ -36,9 +36,11 @@ public slots:
 		m_port = port;
 	};
 	void setStatusInterval(int interval);
-	inline void printStatus(QString state, QString reason) {
+	inline void printStatus(const QString state, const QString reason) {
 		qDebug() << state << ":" << reason;
 	}
+	QString getExplanationForStateReason(const QString reason) const;
+
 signals:
 	void printerStatusChanged(QString state, QString statereason);
 

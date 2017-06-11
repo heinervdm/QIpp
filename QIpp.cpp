@@ -162,6 +162,20 @@ ipp_t* QIpp::doRequest ( ipp_t* request, int fd, const char* filename ) const {
 >>>>>>> Reformat, prepare for job result handling.
 }
 
+QString QIpp::getExplanationForStateReason (QString reason) const {
+	QString level = "Error";
+	if (reason.endsWith("-report")) {
+		reason.remove("-report");
+	} else if (reason.endsWith("-warning")) {
+		reason.remove("-warning");
+	} else if (reason.endsWith("-error")) {
+		reason.remove("-error");
+	}
+
+	return m_states->value(reason);
+}
+
+
 ipp_t* QIpp::doRequest (ipp_t* request, int fd, const char* filename) const {
 	http_t *http = httpConnect2 (m_host.toLatin1(), m_port, NULL, AF_UNSPEC, cupsEncryption(), 1, 1000, NULL);
 	char uri[1024];
