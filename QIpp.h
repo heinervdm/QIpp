@@ -41,7 +41,8 @@ signals:
 
 private:
 	void init();
-	ipp_t *doRequest(ipp_t* request, int fd = -1, const char *filename = NULL) const;
+	ipp_t *doRequest(ipp_t *request, int fd = -1, const char *filename = NULL) const;
+	void handleJobResponse(ipp_t *response) const;
 	QTimer *m_timer;
 	QString m_state;  // printer state (idle, processing, stopped)
 	QString m_statereason; // reason for state, see {{{m_states}}}
@@ -50,8 +51,7 @@ private:
 	int m_port; // ipp port, standard 631
 	QString m_host; // printer host
 	QString m_scheme; // ipp URL scheme (ipp, http, ...)
-	// https://tools.ietf.org/html/rfc2911#section-4.4.12
-	QHash<QString,QString> *m_states;
+	QHash<QString,QString> *m_states; // https://tools.ietf.org/html/rfc2911#section-4.4.12
 
 };
 
