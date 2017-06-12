@@ -2,6 +2,8 @@
 #include <QTimer>
 #include <QUrl>
 
+#include "config.h"
+
 QIpp::QIpp() : m_interval ( 1000 ), m_port ( ippPort() ), m_resource ( "/ipp" ), m_scheme ( "ipp" ), m_host ( cupsServer() ) {
     init();
 }
@@ -134,7 +136,12 @@ QIpp::~QIpp() {
 }
 
 ipp_t* QIpp::doRequest ( ipp_t* request, int fd, const char* filename ) const {
+
+#if CUPS_17 > 0
     http_t *http = httpConnect2 ( m_host.toLatin1(), m_port, NULL, AF_UNSPEC, cupsEncryption(), 1, 1000, NULL );
+#else
+    http_t *http = httpConnect ( m_host.toLatin1(), m_port);
+#endif
     char uri[1024];
     /* Use httpAssembleURIf for the printer-uri string */
     httpAssembleURI ( HTTP_URI_CODING_ALL, uri, sizeof ( uri ), m_scheme.toLatin1(), NULL, m_host.toLatin1(), m_port, m_resource.toLatin1() );
@@ -153,7 +160,11 @@ ipp_t* QIpp::doRequest ( ipp_t* request, int fd, const char* filename ) const {
 
 
 void QIpp::getPrinterStatus() {
+#if CUPS_17 > 0
     ipp_t *request = ippNewRequest ( IPP_OP_GET_PRINTER_ATTRIBUTES );
+#else
+    ipp_t *request = ippNewRequest ( IPP_GET_PRINTER_ATTRIBUTES );
+#endif
     ipp_t *response = doRequest ( request );
 
     ipp_attribute_t *attr;
@@ -175,13 +186,21 @@ void QIpp::getPrinterStatus() {
 }
 
 void QIpp::Print ( const char* filename ) const {
+#if CUPS_17 > 0
     ipp_t *request = ippNewRequest ( IPP_OP_PRINT_JOB );
+#else
+    ipp_t *request = ippNewRequest ( IPP_PRINT_JOB );
+#endif
     ippAddString ( request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name", NULL, filename );
     ipp_t *response = doRequest ( request, -1, filename );
 }
 
 void QIpp::Print ( int fd, const char *jobname ) const {
+#if CUPS_17 > 0
     ipp_t *request = ippNewRequest ( IPP_OP_PRINT_JOB );
+#else
+    ipp_t *request = ippNewRequest ( IPP_PRINT_JOB );
+#endif
     ippAddString ( request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name", NULL, jobname );
     ipp_t *response = doRequest ( request, fd );
 }
