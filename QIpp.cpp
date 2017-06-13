@@ -133,10 +133,11 @@ QIpp::~QIpp() {
 		if (m_timer->isActive()) {
 			m_timer->stop();
 		}
+		delete m_timer;
+	}
+}
 
-<<<<<<< HEAD
 ipp_t* QIpp::doRequest ( ipp_t* request, int fd, const char* filename ) const {
-
 #if CUPS_17 > 0
     http_t *http = httpConnect2 ( m_host.toLatin1(), m_port, NULL, AF_UNSPEC, cupsEncryption(), 1, 1000, NULL );
 #else
@@ -156,10 +157,6 @@ ipp_t* QIpp::doRequest ( ipp_t* request, int fd, const char* filename ) const {
     } else {
         return cupsDoRequest ( http, request, m_resource.toLatin1() );
     }
-=======
-		delete m_timer;
-	}
->>>>>>> Reformat, prepare for job result handling.
 }
 
 QString QIpp::getExplanationForStateReason (QString reason) const {
@@ -175,27 +172,7 @@ QString QIpp::getExplanationForStateReason (QString reason) const {
 	return m_states->value(reason);
 }
 
-
-ipp_t* QIpp::doRequest (ipp_t* request, int fd, const char* filename) const {
-	http_t *http = httpConnect2 (m_host.toLatin1(), m_port, NULL, AF_UNSPEC, cupsEncryption(), 1, 1000, NULL);
-	char uri[1024];
-	/* Use httpAssembleURIf for the printer-uri string */
-	httpAssembleURI (HTTP_URI_CODING_ALL, uri, sizeof (uri), m_scheme.toLatin1(), NULL, m_host.toLatin1(), m_port, m_resource.toLatin1());
-
-	ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri", NULL, uri);
-	ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME, "requesting-user-name", NULL, cupsUser());
-
-	if (fd >= 0) {
-		return cupsDoIORequest (http, request, m_resource.toLatin1(), -1, fd);
-	} else if (filename != NULL) {
-		return cupsDoFileRequest (http, request, m_resource.toLatin1(), filename);
-	} else {
-		return cupsDoRequest (http, request, m_resource.toLatin1());
-	}
-}
-
 void QIpp::getPrinterStatus() {
-<<<<<<< HEAD
 #if CUPS_17 > 0
     ipp_t *request = ippNewRequest ( IPP_OP_GET_PRINTER_ATTRIBUTES );
 #else
@@ -229,6 +206,7 @@ void QIpp::Print ( const char* filename ) const {
 #endif
     ippAddString ( request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name", NULL, filename );
     ipp_t *response = doRequest ( request, -1, filename );
+    handleJobResponse(response);
 }
 
 void QIpp::Print ( int fd, const char *jobname ) const {
@@ -239,38 +217,7 @@ void QIpp::Print ( int fd, const char *jobname ) const {
 #endif
     ippAddString ( request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name", NULL, jobname );
     ipp_t *response = doRequest ( request, fd );
-=======
-	ipp_t *request = ippNewRequest (IPP_OP_GET_PRINTER_ATTRIBUTES);
-	char const *reqAttr[2] = {"printer-state","printer-state-reason"};
-	ippAddStrings(request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD, "requested-attributes", 2, NULL, reqAttr);
-	ipp_t *response = doRequest (request);
-
-	ipp_attribute_t *attr;
-	QString attrname;
-	QString state = "", statereason = "";
-
-	for (attr = ippFirstAttribute (response); attr != NULL; attr = ippNextAttribute (response)) {
-		attrname = ippGetName (attr);
-
-		if (attrname.startsWith ("printer-state") && ippGetValueTag (attr) == IPP_TAG_ENUM) {
-			state = ippEnumString (attrname.toLatin1(), ippGetInteger (attr, 0));
-		} else if (attrname.startsWith ("printer-state-reason") && ippGetValueTag (attr) == IPP_TAG_KEYWORD) {
-			statereason = ippGetString (attr, 0, NULL);
-		}
-	}
-
-	if (state != m_state || statereason != m_statereason) {
-		m_state = state;
-		m_statereason = statereason;
-		emit printerStatusChanged (state, statereason);
-	}
-}
-
-void QIpp::Print (const char* filename) const {
-	ipp_t *request = ippNewRequest (IPP_OP_PRINT_JOB);
-	ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name", NULL, filename);
-	ipp_t *response = doRequest (request, -1, filename);
-	handleJobResponse(response);
+    handleJobResponse(response);
 }
 
 void QIpp::handleJobResponse (ipp_t* response) const{
@@ -291,15 +238,6 @@ void QIpp::handleJobResponse (ipp_t* response) const{
 			joburi = QUrl(ippGetString(attr, 0, NULL));
 		}
 	}
-}
-
-
-void QIpp::Print (int fd, const char *jobname) const {
-	ipp_t *request = ippNewRequest (IPP_OP_PRINT_JOB);
-	ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name", NULL, jobname);
-	ipp_t *response = doRequest (request, fd);
-	handleJobResponse(response);
->>>>>>> Reformat, prepare for job result handling.
 }
 
 void QIpp::setStatusInterval (int interval) {
