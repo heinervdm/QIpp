@@ -1,11 +1,12 @@
-#include <QCoreApplication>
-#include "QIpp.h"
+#include <QApplication>
+#include "StatusGui.h"
 #include <QUrl>
 
 int main(int argc, char** argv)
 {
-	QCoreApplication app(argc, argv);
-	QIpp qipp(new QUrl("ipp://10.16.0.140:631/printer/ipp"));
-	QObject::connect(&qipp, SIGNAL(printerStatusChanged(QString,QString)), &qipp, SLOT(printStatus(QString,QString)));
+	QApplication app(argc, argv);
+// 	QIpp qipp(new QUrl("ipp://10.132.139.33:631/ipp"));
+	StatusGui stgui;
+	stgui.show();
 	return app.exec();
 }

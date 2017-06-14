@@ -29,7 +29,6 @@ QIpp::QIpp (const QUrl* url, int interval) : QObject(), m_interval (interval) {
 	init();
 }
 
-
 void QIpp::init() {
 	// https://tools.ietf.org/html/rfc2911#section-4.4.12
 	m_states = new QHash<QString,QString>;
@@ -122,6 +121,9 @@ void QIpp::init() {
 	m_states->insert ("developer-empty",tr ("The device is out of developer."));
 	m_states->insert ("interpreter-resource-unavailable",tr ("An interpreter resource is unavailable (i.e. font, form)"));
 
+	connect(this, SIGNAL(printerStatusChanged(QString,QString)), this, SLOT(printStatus(QString,QString)));
+	m_state = "";
+	m_statereason = "";
 	m_timer = new QTimer;
 	connect (m_timer, SIGNAL (timeout()), this, SLOT (getPrinterStatus()));
 	m_timer->start (m_interval);
@@ -172,7 +174,7 @@ QString QIpp::getExplanationForStateReason (QString reason) const {
 	return m_states->value(reason);
 }
 
-void QIpp::getPrinterStatus() {
+std::pair<QString,QString> QIpp::getPrinterStatus() {
 #if CUPS_17 > 0
     ipp_t *request = ippNewRequest ( IPP_OP_GET_PRINTER_ATTRIBUTES );
 #else
@@ -194,8 +196,9 @@ void QIpp::getPrinterStatus() {
     if ( state != m_state || statereason != m_statereason ) {
         m_state = state;
         m_statereason = statereason;
-        emit printerStatusChanged ( state, statereason );
+        emit printerStatusChanged ( m_state, m_statereason );
     }
+    return std::pair<QString,QString>(state,statereason);
 }
 
 void QIpp::Print ( const char* filename ) const {
@@ -246,6 +249,20 @@ void QIpp::setStatusInterval (int interval) {
 	if (m_timer) {
 		m_timer->setInterval (m_interval);
 	}
+}
+
+QString QIpp::getSeverityFromStateReason (QString reason) const {
+	QString level = "Error";
+	if (reason.endsWith("-report")) {
+		reason.remove("-report");
+		level = "Info";
+	} else if (reason.endsWith("-warning")) {
+		reason.remove("-warning");
+		level = "Warning";
+	} else if (reason.endsWith("-error")) {
+		reason.remove("-error");
+	}
+	return level;
 }
 
 

@@ -22,7 +22,7 @@ public:
 public slots:
 	void Print(int fd, const char *jobname = "printjob") const;
 	void Print(const char *filename) const;
-	void getPrinterStatus();
+	std::pair<QString,QString> getPrinterStatus();
 	inline void setHost(const char *host) {
 		m_host = QString(host);
 	};
@@ -40,6 +40,7 @@ public slots:
 		qDebug() << state << ":" << reason;
 	}
 	QString getExplanationForStateReason(const QString reason) const;
+	QString getSeverityFromStateReason(QString reason) const;
 
 signals:
 	void printerStatusChanged(QString state, QString statereason);

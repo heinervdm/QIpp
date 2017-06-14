@@ -12,10 +12,10 @@ configure_file ("${PROJECT_SOURCE_DIR}/config.h.in" "${PROJECT_BINARY_DIR}/confi
 
 include_directories(${QT_INCLUDES} ${CUPS_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
-set(QIpp_SRCS QIpp.cpp main.cpp)
+set(QIpp_SRCS QIpp.cpp StatusGui.cpp main.cpp)
 
 qt4_automoc(${QIpp_SRCS})
 add_executable(qipp ${QIpp_SRCS})
-target_link_libraries(qipp ${QT_QTCORE_LIBRARY} ${CUPS_LIBRARIES})
+target_link_libraries(qipp ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${CUPS_LIBRARIES})
 
 install(TARGETS qipp RUNTIME DESTINATION bin)
